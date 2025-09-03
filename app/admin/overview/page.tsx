@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getOrderSummary } from "@/lib/actions/order.actions";
+import { getUserCount } from "@/lib/actions/user.actions";
 import { requireAdmin } from "@/lib/auth-guard";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/utils";
 import { BadgeDollarSign, Barcode, CreditCard, Users } from "lucide-react";
@@ -20,9 +20,8 @@ export const metadata: Metadata = {
 };
 
 const AdminOverviewPage = async () => {
-  const summary = await getOrderSummary();
   await requireAdmin();
-  console.log(summary.salesData);
+  const { userCount } = await getUserCount();
 
   return (
     <div className="space-y-2">
@@ -30,93 +29,13 @@ const AdminOverviewPage = async () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <BadgeDollarSign />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(
-                summary.totalSales._sum.totalPrice?.toString() || 0
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
-            <CreditCard />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(summary.ordersCount)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Customers</CardTitle>
             <Users />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatNumber(summary.usersCount)}
+              {formatNumber(userCount || 0)}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <Barcode />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(summary.productsCount)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 md:grid:cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Charts data={{ salesData: summary.salesData }} />
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>BUYER</TableHead>
-                  <TableHead>DATE</TableHead>
-                  <TableHead>TOTAL</TableHead>
-                  <TableHead>ACTIONS</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {summary.latestSales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell>
-                      {sale?.user?.name ? sale.user.name : "_Deleted User_"}
-                    </TableCell>
-                    <TableCell>
-                      {formatDateTime(sale.createdAt).dateOnly}
-                    </TableCell>
-                    <TableCell>{formatCurrency(sale.totalPrice)}</TableCell>
-                    <TableCell>
-                      <Link href={`/order/${sale.id}`}>
-                        <span className="px-2">Details</span>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
           </CardContent>
         </Card>
       </div>
